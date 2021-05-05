@@ -78,13 +78,8 @@ You would get the folowing output:
 
 ```
 pip install gmpy2
+pip install factordb-pycli
 ```
 
-For long numbers larger then 200 digits is better to use factorDB - there is comment in the code how to use it:
-pip install factordb-pycli
-
-
-FactorDB - is a library for prime numbers factorisation, it uses connection to internet.
-Sympy is optional and used for prime factorisation of small numbers, but usage of full reptend prime page is much slower without it.
-Also you may epxerience issue of installing gmpy2 on windows, in this case you may use unofficial wheel:
+You may epxerience issue of installing gmpy2 on windows, in this case you may use unofficial wheel:
 https://www.lfd.uci.edu/~gohlke/pythonlibs/

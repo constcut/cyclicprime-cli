@@ -7,7 +7,8 @@ Usage:python cyclicprime.py (-prime prime_number | -number number) numeric_syste
 import sys, os
 import math
 import gmpy2
-
+from factordb.factordb import FactorDB
+import logging
 
 
 '''
@@ -69,17 +70,25 @@ Inputs: listOfNumbers.
 Outputs: listOfPrimeNumbers.
 '''
 
+
 def primeNumbersInList(listOfNumbers):
     listOfPrimeNumbers = []
     for i in range(len(listOfNumbers)):
-        #if numbers are greater then 200 digits it would be faster to use FactorDB
-        #from factordb.factordb import FactorDB
-        #f = FactorDB(number)
-        #connection = f.connect()
-        #l = f.get_factor_list()
-        #isPrime = len(l) == 1
-        if gmpy2.is_prime(listOfNumbers[i]):
-            listOfPrimeNumbers.append(listOfNumbers[i])
+  
+        digits = listOfNumbers[i].digits(10) #decimal used here only to check then length of prime number to avoid local check for long numbers
+
+        if len(digits) < 200:
+            if gmpy2.is_prime(listOfNumbers[i]):
+                listOfPrimeNumbers.append(listOfNumbers[i])
+                logging.info(digits)
+        else:
+            f = FactorDB(listOfNumbers[i])
+            connection = f.connect()
+            factorList = f.get_factor_list()
+            if len(factorList) == 1:
+                listOfPrimeNumbers.append(listOfNumbers[i])
+                logging.info(digits)
+            
     return listOfPrimeNumbers
 
 
@@ -189,30 +198,26 @@ def makeCyclicNumber(P, N, numerator=1):
 
 '''
 This function used to explore certain prime number P, in numeric system N, looking for maxDigits.
-It explores all the rationals 1/P .. P-1/P.
 
 Input: P - prime, N - numeric system, maxDigits.
 '''
 
 def exploreByPrime(P, N, maxDigits):
-    for num in range(1, P):
 
-        print("\nExplore numerator: ", num)
+    cyclicNum, repLevel, period = makeCyclicNumber(P, N, numerator=2)
 
-        cyclicNum, repLevel, period = makeCyclicNumber(P, N, numerator=2)
-
-        print('For the prime number', P, 'in numeric system', N, 'we got cyclic number', cyclicNum, ' that is ', repLevel, 'reptend level')
-        print('Period', period)
+    print('For the prime number', P, 'in numeric system', N, 'we got cyclic number', cyclicNum, ' that is ', repLevel, 'reptend level')
+    print('Period', period)
 
 
-        listOfSubNumbers = listSubNumbers(cyclicNum, N, 1, maxDigits) 
-        listOfSubNumbers.sort()
+    listOfSubNumbers = listSubNumbers(cyclicNum, N, 1, maxDigits) 
+    listOfSubNumbers.sort()
 
-        primes = primeNumbersInList(listOfSubNumbers)
+    primes = primeNumbersInList(listOfSubNumbers)
 
-        for p in primes: 
-            originalDigits = p.digits(N)
-            print(originalDigits, " in decimal is ", int(p))
+    for p in primes: 
+        originalDigits = p.digits(N)
+        print(originalDigits, " in decimal is ", int(p))
 
 
 
@@ -231,6 +236,7 @@ def explorByNumber(number, N, maxDigits):
 
     for p in primes: 
         originalDigits = p.digits(N)
+        print()
         print(originalDigits, " in decimal is ", int(p))
 
 
@@ -238,6 +244,12 @@ def explorByNumber(number, N, maxDigits):
 if __name__ == '__main__':
 
     if len(sys.argv) > 1:
+
+        logging.basicConfig(level=logging.INFO, filename="logfile", filemode="a+",
+                        format="%(asctime)-15s %(levelname)-8s %(message)s")
+
+        logging.info("Application started")
+
         if sys.argv[1] == '-prime':
 
             P = int(sys.argv[2])
